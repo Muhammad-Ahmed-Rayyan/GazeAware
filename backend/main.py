@@ -13,6 +13,13 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 load_dotenv()
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 os.environ["GLOG_minloglevel"] = "2"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -184,7 +191,7 @@ class WarningSoundManager:
 
 
 def _start_api_server() -> None:
-    uvicorn.run(_fastapi_app, host="127.0.0.1", port=8000, log_level="error")
+    uvicorn.run(_fastapi_app, host="0.0.0.0", port=8000, log_level="error")
 
 
 def main():

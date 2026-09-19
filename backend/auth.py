@@ -6,23 +6,28 @@ JWT token creation and verification, password hashing.
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 # Secret key — in production this should be in .env
 SECRET_KEY = "gazeaware-secret-key-change-in-production-2024"
 ALGORITHM  = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    pwd_bytes = password.encode("utf-8")[:72]
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    try:
+        pwd_bytes = plain.encode("utf-8")[:72]
+        hashed_bytes = hashed.encode("utf-8")
+        return bcrypt.checkpw(pwd_bytes, hashed_bytes)
+    except Exception:
+        return False
 
 
 def create_access_token(user_id: int, username: str) -> str:
